@@ -230,7 +230,7 @@ def copy_function(addr):
 
     callType = ""
     if hasCallType:
-        callTypeStart = funcDef[0 : funcNameStart].rfind(' ')
+        callTypeStart = funcDef[0 : funcNameStart].rfind('__')
         callType = funcDef[callTypeStart + 1 : funcNameStart]
         returnTypeEnd = callTypeStart
         if callType == "__cdecl":
