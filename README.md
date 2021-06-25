@@ -20,9 +20,9 @@ void(* PCMain_PlayIntroLogos)() = (void(*)())(0x00647250);
 
 Install Prefix into the IDA plugins folder.
 
-- Copy the `ida_func_ptr.py` file into to the IDA plugins folder
-    - On Windows, the folder is at `C:\Program Files (x86)\IDA 6.8\plugins`
-    - On MacOS, the folder is at `/Applications/IDA\ Pro\ 6.8/idaq.app/Contents/MacOS/plugins`
-    - On Linux, the folder may be at `/opt/IDA/plugins/`
+- Copy the `ida_func_ptr.py` file into the IDA plugins folder
+    - On Windows, the folder is at `%APPDATA%\Hex-Rays\IDA Pro\plugins`
+    - On MacOS, the folder is at `$HOME/.idapro/plugins`
+    - On Linux, the folder may be at `$HOME/.idapro/plugins`
 
-The plugin has only been tested on IDA Pro 6.8 for Windows.
+The plugin has only been tested on IDA Pro 7.5 for Windows.
