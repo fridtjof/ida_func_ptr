@@ -10,8 +10,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 # IDA Plugin
 #------------------------------------------------------------------------------
 
-VERSION = "v1.1"
-AUTHORS = ['Matt Stevens']
+VERSION = "v1.2"
+AUTHORS = ['Matt Stevens', 'fridtjof']
 
 # THE FILE MUST BE NAMED TO COME AFTER HEXRAYS ALPHABETICALLY
 
@@ -173,7 +173,7 @@ class Hooks(idaapi.UI_Hooks):
             )
 
         # functions window
-        elif idaapi.get_widget_type(widget) == idaapi.BWN_FUNCS:
+        elif idaapi.get_widget_type(widget) in [idaapi.BWN_FUNCS]:
             idaapi.attach_action_to_popup(widget, popup, funcref_t.ACTION_BULK, "Copy All", idaapi.SETMENU_INS)
 
         return 0
@@ -249,13 +249,25 @@ def copy_function(addr):
 def bulk_function():
     functionPtrs = ""
     for func_name in get_selected_funcs():
-        functionPtrDef = copy_function(idc.get_name_ea_simple(func_name))
+        functionPtrDef = copy_function(idc.get_name_ea_simple(func_name[1]))
         functionPtrs = functionPtrs + functionPtrDef + "\n"
     copy_to_clip(functionPtrs)
     idaapi.msg(functionPtrs)
 
+# get either the demangled name (if available) or the raw name otherwise.
+# we will need this to match against the names displayed in the functions/names window,
+# which are automatically demangled
+def get_ui_func_name(ea):
+    raw_name = idaapi.get_func_name(ea)
+    demangled = idaapi.demangle_name(raw_name, 0)
+    if demangled is None:
+        return raw_name
+    else:
+        return demangled
+
 def get_all_funcs():
-    return set(idaapi.get_func_name(ea) for ea in idautils.Functions())
+    # get both the name as displayed in UI and the "raw" name for each function
+    return [[get_ui_func_name(ea), idaapi.get_func_name(ea)] for ea in idautils.Functions()]
 
 def get_cursor_func_ref():
     current_tform  = idaapi.get_current_widget()
@@ -295,20 +307,21 @@ def get_selected_funcs():
     return match_funcs(selected_funcs)
 
 def match_funcs(qt_funcs):
-    res = set()
+    res = []
     ida_funcs = get_all_funcs()
     for f in qt_funcs:
         for f2 in ida_funcs:
-            if len(f) == len(f2):
+            f2_ui = f2[0]
+            if len(f) == len(f2_ui):
                 i = 0
-                while i < len(f) and (f[i] == f2[i] or f[i] == '_'):
+                while i < len(f) and (f[i] == f2_ui[i] or f[i] == '_'):
                     i += 1
 
                 if i == len(f):
-                    res.add(f2)
+                    res.append(f2)
                     break
 
-    return list(res)
+    return res
 
 def graph_down(ea, path=set()):
     """
